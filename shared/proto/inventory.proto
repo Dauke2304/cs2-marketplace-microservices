@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package inventory;
+
+option go_package = "cs2-marketplace-microservices/shared/proto";
+
+message Skin {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    double price = 4;
+    string image = 5;
+    string rarity = 6;
+    string condition = 7;
+    string owner_id = 8;
+    bool is_listed = 9;
+}
+
+message ListSkinsRequest {
+    map<string, string> filters = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+
+message ListSkinsResponse {
+    repeated Skin skins = 1;
+}
+
+message GetSkinRequest {
+    string skin_id = 1;
+}
+
+message AddSkinRequest {
+    Skin skin = 1;
+}
+
+message RemoveSkinRequest {
+    string skin_id = 1;
+}
+
+service InventoryService {
+    rpc ListSkins(ListSkinsRequest) returns (ListSkinsResponse);
+    rpc GetSkin(GetSkinRequest) returns (Skin);
+    rpc AddSkin(AddSkinRequest) returns (Skin);
+    rpc RemoveSkin(RemoveSkinRequest) returns (google.protobuf.Empty);
+}
