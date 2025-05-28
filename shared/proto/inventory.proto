@@ -1,0 +1,78 @@
+syntax = "proto3";
+package inventory;
+
+option go_package = "./shared/proto/inventory";
+
+message Skin {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    double price = 4;
+    string image = 5;
+    string rarity = 6;
+    string condition = 7;
+    string owner_id = 8;
+    bool is_listed = 9;
+}
+
+message CreateSkinRequest {
+    Skin skin = 1;
+}
+
+message SkinResponse {
+    Skin skin = 1;
+}
+
+message GetSkinRequest {
+    string id = 1;
+}
+
+message ListSkinsRequest {
+    string owner_id = 1;  // optional
+    bool is_listed = 2;   // optional
+    string rarity = 3;    // optional
+}
+
+message ListSkinsResponse {
+    repeated Skin skins = 1;
+}
+
+message UpdateSkinRequest {
+    Skin skin = 1;
+}
+
+message DeleteSkinRequest {
+    string id = 1;
+}
+
+message DeleteResponse {
+    bool success = 1;
+}
+
+message ToggleListingRequest {
+    string id = 1;
+    bool is_listed = 2;
+}
+
+message TransferOwnershipRequest {
+    string skin_id = 1;
+    string new_owner_id = 2;
+    double price = 3;
+}
+
+service InventoryService {
+    // Basic CRUD
+    rpc CreateSkin(CreateSkinRequest) returns (SkinResponse);
+    rpc GetSkin(GetSkinRequest) returns (SkinResponse);
+    rpc ListSkins(ListSkinsRequest) returns (ListSkinsResponse);
+    rpc UpdateSkin(UpdateSkinRequest) returns (SkinResponse);
+    rpc DeleteSkin(DeleteSkinRequest) returns (DeleteResponse);
+    
+    // Special operations
+    rpc ToggleListing(ToggleListingRequest) returns (SkinResponse);
+    rpc TransferOwnership(TransferOwnershipRequest) returns (SkinResponse);
+    
+    // Additional endpoints
+    rpc GetSkinsByOwner(GetSkinRequest) returns (ListSkinsResponse);
+    rpc GetListedSkins(GetSkinRequest) returns (ListSkinsResponse);
+}
