@@ -1,7 +1,7 @@
 syntax = "proto3";
 package inventory;
 
-option go_package = "./shared/proto/inventory";
+option go_package = "cs2-marketplace-microservices/proto/inventory";
 
 message Skin {
     string id = 1;
