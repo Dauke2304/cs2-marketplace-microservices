@@ -1,0 +1,127 @@
+syntax = "proto3";
+package transaction;
+
+option go_package = "cs2-marketplace-microservices/proto/transaction";
+
+enum TransactionStatus {
+    PENDING = 0;
+    COMPLETED = 1;
+    FAILED = 2;
+    CANCELLED = 3;
+}
+
+enum TransactionType {
+    BUY = 0;
+    SELL = 1;
+}
+
+message Transaction {
+    string id = 1;
+    string buyer_id = 2;
+    string seller_id = 3;
+    string skin_id = 4;
+    double amount = 5;
+    string date = 6;
+    TransactionStatus status = 7;
+    TransactionType type = 8;
+    string description = 9;
+}
+
+// Request messages
+message CreateTransactionRequest {
+    string buyer_id = 1;
+    string seller_id = 2;
+    string skin_id = 3;
+    double amount = 4;
+    TransactionType type = 5;
+    string description = 6;
+}
+
+message GetTransactionRequest {
+    string id = 1;
+}
+
+message UpdateTransactionRequest {
+    string id = 1;
+    TransactionStatus status = 2;
+    string description = 3;
+}
+
+message GetTransactionsByUserRequest {
+    string user_id = 1;
+    TransactionStatus status = 2; // optional filter
+    TransactionType type = 3;     // optional filter
+    int32 limit = 4;              // optional limit
+    int32 offset = 5;             // optional offset
+}
+
+message GetTransactionsBySkinRequest {
+    string skin_id = 1;
+}
+
+message GetTransactionsByStatusRequest {
+    TransactionStatus status = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message ProcessPurchaseRequest {
+    string buyer_id = 1;
+    string skin_id = 2;
+}
+
+message CancelTransactionRequest {
+    string id = 1;
+    string reason = 2;
+}
+
+message GetTransactionStatsRequest {
+    string user_id = 1; // optional - if empty, gets global stats
+    string start_date = 2; // optional
+    string end_date = 3;   // optional
+}
+
+// Response messages
+message TransactionResponse {
+    Transaction transaction = 1;
+}
+
+message TransactionListResponse {
+    repeated Transaction transactions = 1;
+    int32 total_count = 2;
+}
+
+message DeleteResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message TransactionStatsResponse {
+    int32 total_transactions = 1;
+    double total_amount = 2;
+    int32 successful_transactions = 3;
+    int32 failed_transactions = 4;
+    double average_transaction_amount = 5;
+}
+
+service TransactionService {
+    // Basic CRUD operations
+    rpc CreateTransaction(CreateTransactionRequest) returns (TransactionResponse);
+    rpc GetTransaction(GetTransactionRequest) returns (TransactionResponse);
+    rpc UpdateTransaction(UpdateTransactionRequest) returns (TransactionResponse);
+    rpc DeleteTransaction(GetTransactionRequest) returns (DeleteResponse);
+    
+    // List operations
+    rpc ListTransactions(GetTransactionsByUserRequest) returns (TransactionListResponse);
+    rpc GetTransactionsByUser(GetTransactionsByUserRequest) returns (TransactionListResponse);
+    rpc GetTransactionsBySkin(GetTransactionsBySkinRequest) returns (TransactionListResponse);
+    rpc GetTransactionsByStatus(GetTransactionsByStatusRequest) returns (TransactionListResponse);
+    
+    // Business operations
+    rpc ProcessPurchase(ProcessPurchaseRequest) returns (TransactionResponse);
+    rpc CancelTransaction(CancelTransactionRequest) returns (TransactionResponse);
+    
+    // Analytics and reporting
+    rpc GetTransactionStats(GetTransactionStatsRequest) returns (TransactionStatsResponse);
+    rpc GetAllTransactions(GetTransactionsByStatusRequest) returns (TransactionListResponse);
+}
