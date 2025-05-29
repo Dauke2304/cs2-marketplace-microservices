@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/joho/godotenv v1.5.1
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	go.mongodb.org/mongo-driver v1.17.3
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
