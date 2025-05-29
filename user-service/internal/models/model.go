@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"cs2-marketplace-microservices/user-service/proto/user"
@@ -61,7 +62,14 @@ func hashPassword(password string) (string, error) {
 
 // CheckPassword verifies the user's password
 func (u *User) CheckPassword(password string) bool {
+	fmt.Println("d3")
+	fmt.Println(password)
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	fmt.Println(err)
+	fmt.Println(u.Password)
+	fmt.Println(u.Email)
+	fmt.Println(u.Username)
+
 	return err == nil
 }
 
@@ -82,16 +90,19 @@ func (u *User) ToProto() *user.User {
 func FromProto(protoUser *user.User) (*User, error) {
 	id, err := primitive.ObjectIDFromHex(protoUser.GetId())
 	if err != nil {
+		fmt.Println("id invalid: ", protoUser.GetId())
 		return nil, err
 	}
 
 	createdAt, err := time.Parse(time.RFC3339, protoUser.GetCreatedAt())
 	if err != nil {
+		fmt.Println("p2")
 		return nil, err
 	}
 
 	updatedAt, err := time.Parse(time.RFC3339, protoUser.GetUpdatedAt())
 	if err != nil {
+		fmt.Println("p3")
 		return nil, err
 	}
 
