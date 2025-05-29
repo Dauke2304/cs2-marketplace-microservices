@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "cs2-marketplace-microservices/proto/user";
+
+// User service definition
+service UserService {
+    // User management endpoints
+    rpc RegisterUser (RegisterRequest) returns (RegisterResponse);
+    rpc LoginUser (LoginRequest) returns (LoginResponse);
+    rpc LogoutUser (LogoutRequest) returns (LogoutResponse);
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+    
+    // Password management endpoints
+    rpc ForgotPassword (ForgotPasswordRequest) returns (ForgotPasswordResponse);
+    rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+    rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse);
+    
+    // Balance management endpoints
+    rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+    rpc UpdateBalance (UpdateBalanceRequest) returns (UpdateBalanceResponse);
+    rpc TransferBalance (TransferBalanceRequest) returns (TransferBalanceResponse);
+    
+    // Admin-specific endpoints
+    rpc AdminGetAllUsers (AdminGetAllUsersRequest) returns (AdminGetAllUsersResponse);
+    rpc AdminUpdateUser (AdminUpdateUserRequest) returns (AdminUpdateUserResponse);
+}
+
+// User object definition
+message User {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    double balance = 4;
+    bool is_admin = 5;
+    string created_at = 6;
+    string updated_at = 7;
+}
+
+// Session object definition
+message Session {
+    string token = 1;
+    string user_id = 2;
+    string expires_at = 3;
+}
+
+// Requests and Responses
+
+// Registration
+message RegisterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message RegisterResponse {
+    User user = 1;
+    string session_token = 2;
+}
+
+// Login
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    User user = 1;
+    string session_token = 2;
+}
+
+// Logout
+message LogoutRequest {
+    string session_token = 1;
+}
+
+message LogoutResponse {
+    bool success = 1;
+}
+
+// Get User
+message GetUserRequest {
+    string user_id = 1;
+}
+
+message GetUserResponse {
+    User user = 1;
+}
+
+// Update User
+message UpdateUserRequest {
+    string user_id = 1;
+    string username = 2;
+    string email = 3;
+}
+
+message UpdateUserResponse {
+    User user = 1;
+}
+
+// Delete User
+message DeleteUserRequest {
+    string user_id = 1;
+}
+
+message DeleteUserResponse {
+    bool success = 1;
+}
+
+// Password Management
+
+// Forgot Password
+message ForgotPasswordRequest {
+    string email = 1;
+}
+
+message ForgotPasswordResponse {
+    bool success = 1;
+}
+
+// Reset Password
+message ResetPasswordRequest {
+    string email = 1;
+    string token = 2;
+    string new_password = 3;
+}
+
+message ResetPasswordResponse {
+    bool success = 1;
+}
+
+// Change Password
+message ChangePasswordRequest {
+    string user_id = 1;
+    string current_password = 2;
+    string new_password = 3;
+}
+
+message ChangePasswordResponse {
+    bool success = 1;
+}
+
+// Balance Management
+
+// Get Balance
+message GetBalanceRequest {
+    string user_id = 1;
+}
+
+message GetBalanceResponse {
+    double balance = 1;
+}
+
+// Update Balance
+message UpdateBalanceRequest {
+    string user_id = 1;
+    double amount = 2;
+    string operation = 3; // "add" or "subtract"
+}
+
+message UpdateBalanceResponse {
+    double new_balance = 1;
+}
+
+// Transfer Balance
+message TransferBalanceRequest {
+    string from_user_id = 1;
+    string to_user_id = 2;
+    double amount = 3;
+}
+
+message TransferBalanceResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// Admin Endpoints
+
+// Get All Users
+message AdminGetAllUsersRequest {
+    string admin_token = 1;
+    int32 page = 2;
+    int32 limit = 3;
+}
+
+message AdminGetAllUsersResponse {
+    repeated User users = 1;
+    int32 total = 2;
+}
+
+// Admin Update User
+message AdminUpdateUserRequest {
+    string admin_token = 1;
+    string user_id = 2;
+    User updates = 3;
+}
+
+message AdminUpdateUserResponse {
+    User user = 1;
+}
