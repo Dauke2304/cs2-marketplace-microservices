@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"cs2-marketplace-microservices/user-service/internal/models"
 	"cs2-marketplace-microservices/user-service/pkg/email"
+	"cs2-marketplace-microservices/user-service/pkg/messaging"
 	"cs2-marketplace-microservices/user-service/pkg/security"
+
+	natsgo "github.com/nats-io/nats.go"
 )
 
 type UserUseCase struct {
@@ -30,13 +34,28 @@ func NewUserUseCase(
 	sr models.SessionRepository,
 	tr models.PasswordResetTokenRepository,
 	es email.Sender,
+	nats *messaging.Client, // Add NATS client
 ) *UserUseCase {
-	return &UserUseCase{
+	uc := &UserUseCase{
 		userRepo:    ur,
 		sessionRepo: sr,
 		tokenRepo:   tr,
 		emailSender: es,
 	}
+
+	// Subscribe to skin.created events
+	if nats != nil {
+		sub, err := nats.Conn.Subscribe("skin.created", func(m *natsgo.Msg) {
+			log.Printf("RECEIVED SKIN ID: %s", string(m.Data))
+		})
+		if err != nil {
+			log.Printf("Failed to subscribe: %v", err)
+		} else {
+			log.Printf("Subscribed to skin.created (ID: %s)", sub.Subject)
+		}
+	}
+
+	return uc
 }
 
 // Auth Use Cases

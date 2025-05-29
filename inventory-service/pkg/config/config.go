@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	MongoURI string
+	NATSURL  string `envconfig:"NATS_URL" default:"nats://localhost:4222"`
 }
 
 func LoadConfig() *Config {

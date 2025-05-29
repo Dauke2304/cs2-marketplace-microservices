@@ -19,6 +19,7 @@ type Config struct {
 	JWTSecret     string
 	EmailUser     string
 	EmailPassword string
+	NATSURL       string `envconfig:"NATS_URL" default:"nats://localhost:4222"`
 }
 
 func Load() *Config {

@@ -3,16 +3,23 @@ package usecase
 import (
 	"context"
 	"cs2-marketplace-microservices/inventory-service/internal/repository"
+	"cs2-marketplace-microservices/inventory-service/pkg/messaging"
 	"cs2-marketplace-microservices/inventory-service/proto/inventory"
 	"errors"
+	"log"
 )
 
 type InventoryUsecase struct {
 	repo repository.InventoryRepository
+	nats *messaging.Client
 }
 
-func NewInventoryUsecase(repo repository.InventoryRepository) *InventoryUsecase {
-	return &InventoryUsecase{repo: repo}
+func NewInventoryUsecase(repo repository.InventoryRepository, nats *messaging.Client) *InventoryUsecase {
+	log.Printf("Initializing usecase with NATS client: %v", nats) // Add this line
+	return &InventoryUsecase{
+		repo: repo,
+		nats: nats,
+	}
 }
 
 func (uc *InventoryUsecase) CreateSkin(ctx context.Context, req *inventory.CreateSkinRequest) (*inventory.SkinResponse, error) {
@@ -20,6 +27,20 @@ func (uc *InventoryUsecase) CreateSkin(ctx context.Context, req *inventory.Creat
 		return nil, errors.New("price must be positive")
 	}
 	skin, err := uc.repo.CreateSkin(ctx, req.GetSkin())
+
+	// Publish skin ID to NATS
+	// Add nil check before publishing
+	if err == nil && uc.nats != nil && uc.nats.Conn != nil {
+		log.Printf("Publishing skin ID: %s to NATS", skin.GetId())
+		if pubErr := uc.nats.Conn.Publish("skin.created", []byte(skin.GetId())); pubErr != nil {
+			log.Printf("NATS publish error: %v", pubErr)
+			// Don't return error, just log it
+		}
+	} else if uc.nats == nil {
+		log.Println("NATS client is nil - skipping publish")
+	} else if uc.nats.Conn == nil {
+		log.Println("NATS connection is nil - skipping publish")
+	}
 	return &inventory.SkinResponse{Skin: skin}, err
 }
 

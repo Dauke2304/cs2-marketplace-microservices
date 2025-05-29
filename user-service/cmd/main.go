@@ -10,6 +10,7 @@ import (
 	"cs2-marketplace-microservices/user-service/internal/usecase"
 	config "cs2-marketplace-microservices/user-service/pkg"
 	"cs2-marketplace-microservices/user-service/pkg/email"
+	"cs2-marketplace-microservices/user-service/pkg/messaging"
 	userpb "cs2-marketplace-microservices/user-service/proto/user"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,6 +35,16 @@ func main() {
 		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
 
+	// Initialize NATS
+	natsClient, err := messaging.New("nats://localhost:4222")
+	if err != nil {
+		log.Fatalf("NATS connection failed: %v", err)
+	}
+	defer func() {
+		log.Println("Closing NATS connection")
+		natsClient.Conn.Close()
+	}()
+
 	// Initialize repositories
 	db := mongoClient.Database(cfg.MongoDBName)
 	userRepo := mongorepo.NewUserRepository(db)
@@ -48,6 +59,7 @@ func main() {
 		sessionRepo,
 		tokenRepo,
 		emailSender,
+		natsClient,
 	)
 
 	// Create gRPC server
