@@ -1,0 +1,42 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter - System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Your microservices (running on host machine)
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['host.docker.internal:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'inventory-service'
+    static_configs:
+      - targets: ['host.docker.internal:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  - job_name: 'transaction-service'
+    static_configs:
+      - targets: ['host.docker.internal:8083']
+    metrics_path: '/metrics'
+    scrape_interval: 5s

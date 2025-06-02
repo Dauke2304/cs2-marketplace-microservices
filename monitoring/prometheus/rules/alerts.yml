@@ -1,0 +1,107 @@
+groups:
+  - name: microservices_alerts
+    rules:
+    # Service Down Alerts
+    - alert: ServiceDown
+      expr: up == 0
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Service {{ $labels.job }} is down"
+        description: "{{ $labels.job }} has been down for more than 30 seconds."
+
+    # User Service Alerts
+    - alert: UserServiceDown
+      expr: user_service_up == 0
+      for: 10s
+      labels:
+        severity: critical
+      annotations:
+        summary: "User Service is down"
+        description: "User service has been down for more than 10 seconds."
+
+    - alert: HighLoginFailureRate
+      expr: rate(user_service_login_attempts_total{status="failed"}[5m]) > 10
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High login failure rate detected"
+        description: "User service is experiencing {{ $value }} login failures per second."
+
+    - alert: DatabaseConnectionsLow
+      expr: user_service_db_connections_active < 1
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "User service database connections are low"
+        description: "User service has {{ $value }} active database connections."
+
+    # Inventory Service Alerts
+    - alert: InventoryServiceDown
+      expr: inventory_service_up == 0
+      for: 10s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Inventory Service is down"
+        description: "Inventory service has been down for more than 10 seconds."
+
+    - alert: HighInventoryServiceErrors
+      expr: rate(inventory_service_errors_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High error rate in Inventory Service"
+        description: "Inventory service is experiencing {{ $value }} errors per second."
+
+    # Transaction Service Alerts
+    - alert: TransactionServiceDown
+      expr: transaction_service_up == 0
+      for: 10s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Transaction Service is down"
+        description: "Transaction service has been down for more than 10 seconds."
+
+    # Response Time Alerts
+    - alert: HighResponseTime
+      expr: histogram_quantile(0.95, rate(user_service_request_duration_seconds_bucket[5m])) > 2
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High response time for User Service"
+        description: "95th percentile response time is {{ $value }}s."
+
+    - alert: HighInventoryResponseTime
+      expr: histogram_quantile(0.95, rate(inventory_service_request_duration_seconds_bucket[5m])) > 2
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High response time for Inventory Service"
+        description: "95th percentile response time is {{ $value }}s."
+
+    # System Resource Alerts
+    - alert: HighCpuUsage
+      expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage detected"
+        description: "CPU usage is above 80% for more than 5 minutes."
+
+    - alert: HighMemoryUsage
+      expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage detected"
+        description: "Memory usage is above 80% for more than 5 minutes."
